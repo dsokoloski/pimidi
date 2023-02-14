@@ -89,12 +89,6 @@ int main(int argc, char *argv[])
 	service_desc.publish_ipv4 = is_yes( config_string_get("service.ipv4"));
 	service_desc.publish_ipv6 = is_yes( config_string_get("service.ipv6"));
 
-	if( is_yes( config_string_get("run_as_daemon") ) )
-	{
-		running_as_daemon = 1;
-		daemon_start();
-	}
-
 	if( net_socket_init() != 0 )
 	{
 		ret = EXIT_FAILURE;
@@ -105,7 +99,6 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 	raveloxmidi_alsa_init( "alsa.input_device" , "alsa.output_device" , config_int_get("alsa.input_buffer_size") );
 #endif
-
 	net_ctx_init();
 
 	ret = dns_service_publisher_start( &service_desc );
@@ -116,6 +109,13 @@ int main(int argc, char *argv[])
 		logging_printf(LOGGING_ERROR, "Unable to create publish thread\n");
 		goto daemon_stop;
 	}
+
+	if( is_yes( config_string_get("run_as_daemon") ) )
+	{
+		running_as_daemon = 1;
+		daemon_start();
+	}
+
 	net_socket_loop_init();
 
 	midi_sender_init();
